@@ -66,6 +66,12 @@ func TestStatusEncode(t *testing.T) {
 	s.Voltage = 6.1234
 	result, _ = s.Encode()
 	assert.Equal(t, "d=20200818&t=12%3A34&v6=6.1", result)
+
+	// test cumulative
+	s = newValidStatus()
+	s.Cumulative = StatusCumulativeConsuming
+	result, _ = s.Encode()
+	assert.Equal(t, "c1=3&d=20200818&t=12%3A34", result)
 }
 
 func TestDecodeStatus(t *testing.T) {

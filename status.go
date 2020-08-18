@@ -10,15 +10,15 @@ import (
 )
 
 // StatusCumulative is a flag to tell if and how a status update has cumulative Wh values
-type StatusCumulative string
+type StatusCumulative int
 
 const (
 	// StatusCumulativeAll all Wh values are lifetime energy values
-	StatusCumulativeAll StatusCumulative = "all"
+	StatusCumulativeAll StatusCumulative = 1
 	// StatusCumulativeGenerating generation Wh values are lifetime energy values
-	StatusCumulativeGenerating StatusCumulative = "generating"
+	StatusCumulativeGenerating StatusCumulative = 2
 	// StatusCumulativeConsuming consumption Wh values are lifetime energy values
-	StatusCumulativeConsuming StatusCumulative = "consuming"
+	StatusCumulativeConsuming StatusCumulative = 3
 )
 
 // Status represents the data structure for a PV status update as described
@@ -50,6 +50,7 @@ func NewStatus() Status {
 		Consuming:   outputUnsetInt,
 		Temperature: outputUnsetFloat,
 		Voltage:     outputUnsetFloat,
+		Cumulative:  StatusCumulative(outputUnsetInt),
 	}
 }
 
@@ -81,8 +82,8 @@ func (s Status) Encode() (string, error) {
 	if s.Voltage != outputUnsetFloat {
 		data.Set("v6", fmt.Sprintf("%0.1f", s.Voltage))
 	}
-	if s.Cumulative != "" {
-		data.Set("c1", string(s.Cumulative))
+	if int(s.Cumulative) != outputUnsetInt {
+		data.Set("c1", fmt.Sprintf("%d", s.Cumulative))
 	}
 
 	return data.Encode(), nil

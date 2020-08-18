@@ -1,9 +1,18 @@
 package pvoutput
 
 import (
+	"errors"
+	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
+)
+
+var (
+	outputUnsetInt    int     = -1
+	outputUnsetFloat  float64 = -1.0
+	outputUnsetString string  = "__unset__"
 )
 
 // Output represents the data structure for a PV Output as described
@@ -28,6 +37,97 @@ type Output struct {
 	ExportShoulder     int // watt hours
 	ExportHighShoulder int // watt hours
 	Insolation         int // watt hours
+}
+
+// NewOutput initialises and returns a new Output
+// the reason why we set everything to "unset" values
+// is to detect the difference between an unset field
+// or a deliberately set to default values of
+// 0 and 0.0 for int and float respectively
+// this helps during encoding the output to API POST
+// body
+func NewOutput() Output {
+	return Output{
+		Generated:          outputUnsetInt,
+		Exported:           outputUnsetInt,
+		PeakPower:          outputUnsetInt,
+		Condition:          outputUnsetString,
+		MinTemp:            outputUnsetFloat,
+		MaxTemp:            outputUnsetFloat,
+		Comments:           outputUnsetString,
+		ImportPeak:         outputUnsetInt,
+		ImportOffPeak:      outputUnsetInt,
+		ImportShoulder:     outputUnsetInt,
+		ImportHighShoulder: outputUnsetInt,
+		Consumption:        outputUnsetInt,
+		ExportPeak:         outputUnsetInt,
+		ExportOffPeak:      outputUnsetInt,
+		ExportShoulder:     outputUnsetInt,
+		ExportHighShoulder: outputUnsetInt,
+	}
+}
+
+// Encode returns API string for this object
+func (o Output) Encode() (string, error) {
+	data := url.Values{}
+	if o.Date.IsZero() {
+		return "", errors.New("Date is required on Output")
+	}
+
+	data.Set("d", o.Date.Format("20060102"))
+	if o.Generated != outputUnsetInt {
+		data.Set("g", fmt.Sprintf("%d", o.Generated))
+	}
+	if o.Exported != outputUnsetInt {
+		data.Set("e", fmt.Sprintf("%d", o.Exported))
+	}
+	if o.PeakPower != outputUnsetInt {
+		data.Set("pp", fmt.Sprintf("%d", o.PeakPower))
+	}
+	if !o.PeakTime.IsZero() {
+		data.Set("pt", o.PeakTime.Format("15:04"))
+	}
+	if o.Condition != outputUnsetString {
+		data.Set("cd", o.Condition)
+	}
+	if o.MinTemp != outputUnsetFloat {
+		data.Set("tm", fmt.Sprintf("%0.1f", o.MinTemp))
+	}
+	if o.MaxTemp != outputUnsetFloat {
+		data.Set("tx", fmt.Sprintf("%0.1f", o.MaxTemp))
+	}
+	if o.Comments != outputUnsetString {
+		data.Set("cm", o.Comments)
+	}
+	if o.ImportPeak != outputUnsetInt {
+		data.Set("ip", fmt.Sprintf("%d", o.ImportPeak))
+	}
+	if o.ImportOffPeak != outputUnsetInt {
+		data.Set("io", fmt.Sprintf("%d", o.ImportOffPeak))
+	}
+	if o.ImportShoulder != outputUnsetInt {
+		data.Set("is", fmt.Sprintf("%d", o.ImportShoulder))
+	}
+	if o.ImportHighShoulder != outputUnsetInt {
+		data.Set("ih", fmt.Sprintf("%d", o.ImportHighShoulder))
+	}
+	if o.Consumption != outputUnsetInt {
+		data.Set("c", fmt.Sprintf("%d", o.Consumption))
+	}
+	if o.ExportPeak != outputUnsetInt {
+		data.Set("ep", fmt.Sprintf("%d", o.ExportPeak))
+	}
+	if o.ExportOffPeak != outputUnsetInt {
+		data.Set("eo", fmt.Sprintf("%d", o.ExportOffPeak))
+	}
+	if o.ExportShoulder != outputUnsetInt {
+		data.Set("es", fmt.Sprintf("%d", o.ExportShoulder))
+	}
+	if o.ExportHighShoulder != outputUnsetInt {
+		data.Set("eh", fmt.Sprintf("%d", o.ExportHighShoulder))
+	}
+
+	return data.Encode(), nil
 }
 
 func decodeOutput(input string) (op Output, err error) {

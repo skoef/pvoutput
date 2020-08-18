@@ -13,6 +13,29 @@ var (
 	outputUnsetInt    int     = -1
 	outputUnsetFloat  float64 = -1.0
 	outputUnsetString string  = "__unset__"
+	// order of keys in batch output
+	// as described on https://pvoutput.org/help.html#api-addbatchoutput
+	outputBatchKeys = []string{
+		"d",  // date
+		"g",  // generated
+		"e",  // exported
+		"c",  // consumed
+		"pp", // peak power
+		"pt", // peak time
+		"cd", // condition
+		"tm", // min temperature
+		"tx", // max temperature
+		"cm", // comments
+		"ip", // import peak
+		"io", // import off-peak
+		"is", // import shoulder
+	}
+)
+
+const (
+	// BatchOutputMaxSize determines the maximum batch size
+	// this is 30 according to PVOutput's docs
+	BatchOutputMaxSize = 30
 )
 
 // Output represents the data structure for a PV Output as described
@@ -68,11 +91,10 @@ func NewOutput() Output {
 	}
 }
 
-// Encode returns API string for this object
-func (o Output) Encode() (string, error) {
+func (o Output) encode() (url.Values, error) {
 	data := url.Values{}
 	if o.Date.IsZero() {
-		return "", errors.New("Date is required on Output")
+		return nil, errors.New("Date is required on Output")
 	}
 
 	data.Set("d", o.Date.Format("20060102"))
@@ -126,6 +148,16 @@ func (o Output) Encode() (string, error) {
 	}
 	if o.ExportHighShoulder != outputUnsetInt {
 		data.Set("eh", fmt.Sprintf("%d", o.ExportHighShoulder))
+	}
+
+	return data, nil
+}
+
+// Encode returns API string for this object
+func (o Output) Encode() (string, error) {
+	data, err := o.encode()
+	if err != nil {
+		return "", err
 	}
 
 	return data.Encode(), nil
@@ -250,4 +282,37 @@ func decodeOutput(input string) (op Output, err error) {
 	}
 
 	return
+}
+
+// BatchOutput is a convenience type for a slice of Outputs
+type BatchOutput []Output
+
+// Encode returns API string for this object
+func (b BatchOutput) Encode() (string, error) {
+	if len(b) == 0 {
+		return "", errors.New("Empty batch")
+	}
+
+	if len(b) > BatchOutputMaxSize {
+		return "", fmt.Errorf("Max batch size is %d", BatchOutputMaxSize)
+	}
+
+	items := []string{}
+
+	for _, o := range b {
+		fields := []string{}
+		enc, err := o.encode()
+		if err != nil {
+			return "", err
+		}
+
+		for _, key := range outputBatchKeys {
+			fields = append(fields, enc.Get(key))
+		}
+
+		line := strings.Join(fields, ",")
+		items = append(items, strings.TrimRight(line, ","))
+	}
+
+	return fmt.Sprintf("data=%s", strings.Join(items, ";")), nil
 }

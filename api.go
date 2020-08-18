@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	apiBaseURL           = "https://pvoutput.org/service/r2/"
-	apiAddOutputEndpoint = "addoutput.jsp"
-	apiAddStatusEndpoint = "addstatus.jsp"
+	apiBaseURL                = "https://pvoutput.org/service/r2/"
+	apiAddOutputEndpoint      = "addoutput.jsp"
+	apiAddBatchOutputEndpoint = "addbatchoutput.jsp"
+	apiAddStatusEndpoint      = "addstatus.jsp"
 )
 
 var (
@@ -83,6 +84,31 @@ func (a API) AddOutput(o Output) error {
 	}
 
 	if string(body) != "OK 200: Added Output" {
+		return errors.New(string(body))
+	}
+
+	return nil
+}
+
+// AddBatchOutput implements PVOutput's /addbatchoutput.jsp service
+func (a API) AddBatchOutput(b BatchOutput) error {
+	req, err := a.getPOSTRequest(apiAddBatchOutputEndpoint, b)
+	if err != nil {
+		return err
+	}
+
+	resp, err := a.client.Do(req)
+	if err != nil {
+
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if string(body) != "OK 200: Added Batch" {
 		return errors.New(string(body))
 	}
 

@@ -177,3 +177,50 @@ func TestDecodeOutput(t *testing.T) {
 		assert.Equal(t, 12910, output.Insolation)
 	}
 }
+
+func TestEncodeBatchOutput(t *testing.T) {
+	var b BatchOutput
+
+	// expect error for empty batch
+	b = BatchOutput{}
+	_, err := b.Encode()
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "Empty")
+	}
+
+	// batches that are too big should throw an error as well
+	b = make(BatchOutput, (BatchOutputMaxSize + 1))
+	_, err = b.Encode()
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "Max")
+	}
+
+	// example of documentation
+	// "Send three outputs in a single batch request"
+	b = BatchOutput{NewOutput(), NewOutput(), NewOutput()}
+	b[0].Date, _ = time.Parse("20060102", "20150101")
+	b[0].Generated = 1239
+	b[1].Date, _ = time.Parse("20060102", "20150102")
+	b[1].Generated = 1523
+	b[2].Date, _ = time.Parse("20060102", "20150103")
+	b[2].Generated = 2190
+
+	result, err := b.Encode()
+	if assert.NoError(t, err) {
+		assert.Equal(t, "data=20150101,1239;20150102,1523;20150103,2190", result)
+	}
+
+	// example of documentation
+	// "Send a single status with Generation Energy 850Wh, Energy Used 1100Wh and Temperature 10.4C to 20.5C"
+	b = BatchOutput{NewOutput()}
+	b[0].Date, _ = time.Parse("20060102", "20150101")
+	b[0].Generated = 850
+	b[0].Consumed = 1100
+	b[0].MinTemp = 10.4
+	b[0].MaxTemp = 20.5
+
+	result, err = b.Encode()
+	if assert.NoError(t, err) {
+		assert.Equal(t, "data=20150101,850,,1100,,,,10.4,20.5", result)
+	}
+}

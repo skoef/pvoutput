@@ -11,6 +11,7 @@ import (
 const (
 	apiBaseURL           = "https://pvoutput.org/service/r2/"
 	apiAddOutputEndpoint = "addoutput.jsp"
+	apiAddStatusEndpoint = "addstatus.jsp"
 )
 
 var (
@@ -64,6 +65,31 @@ func (a API) getRequest(method, path string) (*http.Request, error) {
 // AddOutput implements PVOutput's /addoutput.jsp service
 func (a API) AddOutput(o Output) error {
 	req, err := a.getPOSTRequest(apiAddOutputEndpoint, o)
+	if err != nil {
+		return err
+	}
+
+	resp, err := a.client.Do(req)
+	if err != nil {
+
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if string(body) != "OK 200: Added Output" {
+		return errors.New(string(body))
+	}
+
+	return nil
+}
+
+// AddStatus implements PVOutput's /addoutput.jsp service
+func (a API) AddStatus(s Status) error {
+	req, err := a.getPOSTRequest(apiAddOutputEndpoint, s)
 	if err != nil {
 		return err
 	}

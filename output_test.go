@@ -103,9 +103,9 @@ func TestEncodeOutput(t *testing.T) {
 	result, _ = o.Encode()
 	assert.Equal(t, "d=20200818&ih=13", result)
 
-	// check consumption
+	// check consumed
 	o = newValidOutput()
-	o.Consumption = 14
+	o.Consumed = 14
 	result, _ = o.Encode()
 	assert.Equal(t, "c=14&d=20200818", result)
 
@@ -145,7 +145,7 @@ func TestDecodeOutput(t *testing.T) {
 		assert.Equal(t, 4413, output.Generated)
 		assert.Equal(t, 0.46, output.Efficiency)
 		assert.Equal(t, 1234, output.Exported)
-		assert.Equal(t, 21859, output.Consumption)
+		assert.Equal(t, 21859, output.Consumed)
 		assert.Equal(t, 2070, output.PeakPower)
 		ptime, _ := time.Parse("15:04", "11:00")
 		assert.Equal(t, ptime, output.PeakTime)

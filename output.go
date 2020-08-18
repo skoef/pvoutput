@@ -32,7 +32,7 @@ type Output struct {
 	ImportOffPeak      int // watt hours
 	ImportShoulder     int // watt hours
 	ImportHighShoulder int // watt hours
-	Consumption        int // watt hours
+	Consumed           int // watt hours
 	ExportPeak         int // watt hours
 	ExportOffPeak      int // watt hours
 	ExportShoulder     int // watt hours
@@ -60,7 +60,7 @@ func NewOutput() Output {
 		ImportOffPeak:      outputUnsetInt,
 		ImportShoulder:     outputUnsetInt,
 		ImportHighShoulder: outputUnsetInt,
-		Consumption:        outputUnsetInt,
+		Consumed:           outputUnsetInt,
 		ExportPeak:         outputUnsetInt,
 		ExportOffPeak:      outputUnsetInt,
 		ExportShoulder:     outputUnsetInt,
@@ -112,8 +112,8 @@ func (o Output) Encode() (string, error) {
 	if o.ImportHighShoulder != outputUnsetInt {
 		data.Set("ih", fmt.Sprintf("%d", o.ImportHighShoulder))
 	}
-	if o.Consumption != outputUnsetInt {
-		data.Set("c", fmt.Sprintf("%d", o.Consumption))
+	if o.Consumed != outputUnsetInt {
+		data.Set("c", fmt.Sprintf("%d", o.Consumed))
 	}
 	if o.ExportPeak != outputUnsetInt {
 		data.Set("ep", fmt.Sprintf("%d", o.ExportPeak))
@@ -162,7 +162,7 @@ func decodeOutput(input string) (op Output, err error) {
 		if err != nil {
 			return
 		}
-		op.Consumption = int(plh)
+		op.Consumed = int(plh)
 		// parse PeakPower field from fields[5]
 		plh, err = strconv.ParseInt(fields[5], 10, 64)
 		if err != nil {

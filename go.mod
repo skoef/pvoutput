@@ -1,4 +1,4 @@
-module pvoutput
+module github.com/skoef/pvoutput
 
 go 1.14
 

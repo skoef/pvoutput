@@ -63,6 +63,8 @@ func (a API) getRequest(method, path string) (*http.Request, error) {
 }
 
 // AddOutput implements PVOutput's /addoutput.jsp service
+// TODO: this function and equivalent should be refactored
+// instead of duplicated
 func (a API) AddOutput(o Output) error {
 	req, err := a.getPOSTRequest(apiAddOutputEndpoint, o)
 	if err != nil {
@@ -89,7 +91,7 @@ func (a API) AddOutput(o Output) error {
 
 // AddStatus implements PVOutput's /addoutput.jsp service
 func (a API) AddStatus(s Status) error {
-	req, err := a.getPOSTRequest(apiAddOutputEndpoint, s)
+	req, err := a.getPOSTRequest(apiAddStatusEndpoint, s)
 	if err != nil {
 		return err
 	}
@@ -105,7 +107,7 @@ func (a API) AddStatus(s Status) error {
 		return err
 	}
 
-	if string(body) != "OK 200: Added Output" {
+	if string(body) != "OK 200: Added Status" {
 		return errors.New(string(body))
 	}
 

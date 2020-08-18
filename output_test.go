@@ -143,7 +143,7 @@ func TestDecodeOutput(t *testing.T) {
 		date, _ := time.Parse("20060102", "20110327")
 		assert.Equal(t, date, output.Date)
 		assert.Equal(t, 4413, output.Generated)
-		// Efficiency 0.460
+		assert.Equal(t, 0.46, output.Efficiency)
 		assert.Equal(t, 1234, output.Exported)
 		assert.Equal(t, 21859, output.Consumption)
 		assert.Equal(t, 2070, output.PeakPower)

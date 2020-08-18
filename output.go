@@ -19,9 +19,10 @@ var (
 // on https://pvoutput.org/help.html#api-addoutput
 type Output struct {
 	Date               time.Time
-	Generated          int // watt hours
-	Exported           int // watt hours
-	PeakPower          int // watts
+	Generated          int     // watt hours
+	Efficiency         float64 // ratio
+	Exported           int     // watt hours
+	PeakPower          int     // watts
 	PeakTime           time.Time
 	Condition          string
 	MinTemp            float64 // degrees celsius
@@ -145,9 +146,11 @@ func decodeOutput(input string) (op Output, err error) {
 			return
 		}
 		op.Generated = int(plh)
-
-		/* Efficiency	number	kWh/kW	0.460 */
-
+		// parse Efficiency field from fields[8]
+		op.Efficiency, err = strconv.ParseFloat(fields[2], 64)
+		if err != nil {
+			return
+		}
 		// parse Exported field from fields[3]
 		plh, err = strconv.ParseInt(fields[3], 10, 64)
 		if err != nil {

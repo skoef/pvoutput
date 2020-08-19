@@ -91,3 +91,66 @@ func TestDecodeStatus(t *testing.T) {
 		assert.Equal(t, 240.1, status.Voltage)
 	}
 }
+
+func TestEncodeBatchStatus(t *testing.T) {
+	var b BatchStatus
+
+	// expect error for empty batch
+	b = BatchStatus{}
+	_, err := b.Encode()
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "Empty")
+	}
+
+	// batches that are too big should throw an error as well
+	b = make(BatchStatus, (BatchStatusMaxSize + 1))
+	_, err = b.Encode()
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "Max")
+	}
+
+	// example of documentation
+	// "Send three statuses from 10:00AM to 10:10AM in a single batch request"
+	b = BatchStatus{NewStatus(), NewStatus(), NewStatus()}
+	b[0].DateTime, _ = time.Parse("200601021504", "201101121000")
+	b[0].Generated = 705
+	b[0].Generating = 1029
+	b[1].DateTime, _ = time.Parse("200601021504", "201101121005")
+	b[1].Generated = 775
+	b[1].Generating = 1320
+	b[2].DateTime, _ = time.Parse("200601021504", "201101121010")
+	b[2].Generated = 800
+	b[2].Generating = 800
+
+	result, err := b.Encode()
+	if assert.NoError(t, err) {
+		assert.Equal(t, "data=20110112,10:00,705,1029;20110112,10:05,775,1320;20110112,10:10,800,800", result)
+	}
+
+	// example of documentation
+	// "Send a single status with Generation Energy 850Wh, Generation Power 1109W, Temperature 23.1C and Voltage 240V"
+	b = BatchStatus{NewStatus()}
+	b[0].DateTime, _ = time.Parse("200601021504", "201101121015")
+	b[0].Generated = 850
+	b[0].Generating = 1109
+	b[0].Temperature = 23.1
+	b[0].Voltage = 240
+
+	result, err = b.Encode()
+	if assert.NoError(t, err) {
+		assert.Equal(t, "data=20110112,10:15,850,1109,,,23.1,240.0", result)
+	}
+
+	// example of documentation
+	// "Send a single status with Consumption Energy 2000Wh, Consumption Power 210W"
+	// data=20110112,4:15,,,2000,210
+	b = BatchStatus{NewStatus()}
+	b[0].DateTime, _ = time.Parse("200601021504", "201101120415")
+	b[0].Consumed = 2000
+	b[0].Consuming = 210
+
+	result, err = b.Encode()
+	if assert.NoError(t, err) {
+		assert.Equal(t, "data=20110112,04:15,,,2000,210", result)
+	}
+}

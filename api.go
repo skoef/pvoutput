@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -13,6 +14,7 @@ const (
 	apiAddOutputEndpoint      = "addoutput.jsp"
 	apiAddBatchOutputEndpoint = "addbatchoutput.jsp"
 	apiAddStatusEndpoint      = "addstatus.jsp"
+	apiAddBatchStatusEndpoint = "addbatchstatus.jsp"
 )
 
 var (
@@ -115,7 +117,7 @@ func (a API) AddBatchOutput(b BatchOutput) error {
 	return nil
 }
 
-// AddStatus implements PVOutput's /addoutput.jsp service
+// AddStatus implements PVOutput's /addstatus.jsp service
 func (a API) AddStatus(s Status) error {
 	req, err := a.getPOSTRequest(apiAddStatusEndpoint, s)
 	if err != nil {
@@ -134,6 +136,31 @@ func (a API) AddStatus(s Status) error {
 	}
 
 	if string(body) != "OK 200: Added Status" {
+		return errors.New(string(body))
+	}
+
+	return nil
+}
+
+// AddBatchStatus implements PVOutput's /addbatchstatus.jsp service
+func (a API) AddBatchStatus(b BatchStatus) error {
+	req, err := a.getPOSTRequest(apiAddBatchStatusEndpoint, b)
+	if err != nil {
+		return err
+	}
+
+	resp, err := a.client.Do(req)
+	if err != nil {
+
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if match, err := regexp.MatchString(`^(\d+,[\d:]+,[01];?)+$`, string(body)); !match || err != nil {
 		return errors.New(string(body))
 	}
 

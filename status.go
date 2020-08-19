@@ -9,6 +9,27 @@ import (
 	"time"
 )
 
+var (
+	// order of keys in batch status
+	// as described on https://pvoutput.org/help.html#api-addbatchstatus
+	statusBatchKeys = []string{
+		"d",  // date
+		"t",  // time
+		"v1", // generated
+		"v2", // generating
+		"v3", // consumed
+		"v4", // consuming
+		"v5", // temperature
+		"v6", // voltage
+	}
+)
+
+const (
+	// BatchStatusMaxSize determines the maximum batch size
+	// this is 30 according to PVOutput's docs
+	BatchStatusMaxSize = 30
+)
+
 // StatusCumulative is a flag to tell if and how a status update has cumulative Wh values
 type StatusCumulative int
 
@@ -54,11 +75,10 @@ func NewStatus() Status {
 	}
 }
 
-// Encode returns API string for this object
-func (s Status) Encode() (string, error) {
+func (s Status) encode() (url.Values, error) {
 	data := url.Values{}
 	if s.DateTime.IsZero() {
-		return "", errors.New("DateTime is required on Status")
+		return nil, errors.New("DateTime is required on Status")
 	}
 
 	data.Set("d", s.DateTime.Format("20060102"))
@@ -84,6 +104,16 @@ func (s Status) Encode() (string, error) {
 	}
 	if int(s.Cumulative) != outputUnsetInt {
 		data.Set("c1", fmt.Sprintf("%d", s.Cumulative))
+	}
+
+	return data, nil
+}
+
+// Encode returns API string for this object
+func (s Status) Encode() (string, error) {
+	data, err := s.encode()
+	if err != nil {
+		return "", err
 	}
 
 	return data.Encode(), nil
@@ -141,4 +171,37 @@ func decodeStatus(input string) (s Status, err error) {
 	}
 
 	return
+}
+
+// BatchStatus is a convenience type for a slice of Status'
+type BatchStatus []Status
+
+// Encode returns API string for this object
+func (b BatchStatus) Encode() (string, error) {
+	if len(b) == 0 {
+		return "", errors.New("Empty batch")
+	}
+
+	if len(b) > BatchStatusMaxSize {
+		return "", fmt.Errorf("Max batch size is %d", BatchStatusMaxSize)
+	}
+
+	items := []string{}
+
+	for _, s := range b {
+		fields := []string{}
+		enc, err := s.encode()
+		if err != nil {
+			return "", err
+		}
+
+		for _, key := range statusBatchKeys {
+			fields = append(fields, enc.Get(key))
+		}
+
+		line := strings.Join(fields, ",")
+		items = append(items, strings.TrimRight(line, ","))
+	}
+
+	return fmt.Sprintf("data=%s", strings.Join(items, ";")), nil
 }

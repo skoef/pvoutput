@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"strings"
 )
 
@@ -15,10 +14,6 @@ const (
 	apiAddBatchOutputEndpoint = "addbatchoutput.jsp"
 	apiAddStatusEndpoint      = "addstatus.jsp"
 	apiAddBatchStatusEndpoint = "addbatchstatus.jsp"
-)
-
-var (
-	ErrRateExceeded = errors.New("rate limit exceeded")
 )
 
 // API is a struct holding relevant session data
@@ -65,18 +60,10 @@ func (a API) getRequest(method, path string) (*http.Request, error) {
 	return req, nil
 }
 
-// AddOutput implements PVOutput's /addoutput.jsp service
-// TODO: this function and equivalent should be refactored
-// instead of duplicated
-func (a API) AddOutput(o Output) error {
-	req, err := a.getPOSTRequest(apiAddOutputEndpoint, o)
-	if err != nil {
-		return err
-	}
-
+func (a API) handleRequest(req *http.Request) error {
 	resp, err := a.client.Do(req)
 	if err != nil {
-
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -85,11 +72,21 @@ func (a API) AddOutput(o Output) error {
 		return err
 	}
 
-	if string(body) != "OK 200: Added Output" {
+	if resp.StatusCode != http.StatusOK {
 		return errors.New(string(body))
 	}
 
 	return nil
+}
+
+// AddOutput implements PVOutput's /addoutput.jsp service
+func (a API) AddOutput(o Output) error {
+	req, err := a.getPOSTRequest(apiAddOutputEndpoint, o)
+	if err != nil {
+		return err
+	}
+
+	return a.handleRequest(req)
 }
 
 // AddBatchOutput implements PVOutput's /addbatchoutput.jsp service
@@ -99,22 +96,7 @@ func (a API) AddBatchOutput(b BatchOutput) error {
 		return err
 	}
 
-	resp, err := a.client.Do(req)
-	if err != nil {
-
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	if string(body) != "OK 200: Added Batch" {
-		return errors.New(string(body))
-	}
-
-	return nil
+	return a.handleRequest(req)
 }
 
 // AddStatus implements PVOutput's /addstatus.jsp service
@@ -124,22 +106,7 @@ func (a API) AddStatus(s Status) error {
 		return err
 	}
 
-	resp, err := a.client.Do(req)
-	if err != nil {
-
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	if string(body) != "OK 200: Added Status" {
-		return errors.New(string(body))
-	}
-
-	return nil
+	return a.handleRequest(req)
 }
 
 // AddBatchStatus implements PVOutput's /addbatchstatus.jsp service
@@ -149,20 +116,5 @@ func (a API) AddBatchStatus(b BatchStatus) error {
 		return err
 	}
 
-	resp, err := a.client.Do(req)
-	if err != nil {
-
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	if match, err := regexp.MatchString(`^(\d+,[\d:]+,[01];?)+$`, string(body)); !match || err != nil {
-		return errors.New(string(body))
-	}
-
-	return nil
+	return a.handleRequest(req)
 }

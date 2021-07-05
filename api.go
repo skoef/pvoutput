@@ -11,7 +11,6 @@ import (
 const (
 	apiBaseURL                = "https://pvoutput.org/service/r2/"
 	apiAddOutputEndpoint      = "addoutput.jsp"
-	apiAddBatchOutputEndpoint = "addbatchoutput.jsp"
 	apiAddStatusEndpoint      = "addstatus.jsp"
 	apiAddBatchStatusEndpoint = "addbatchstatus.jsp"
 )
@@ -21,14 +20,16 @@ type API struct {
 	Key      string
 	SystemID string
 	client   http.Client
+	donating bool
 }
 
 // NewAPI returns a new API object for given systemID and API key
-func NewAPI(key, systemID string) API {
+func NewAPI(key, systemID string, donating bool) API {
 	return API{
 		SystemID: systemID,
 		Key:      key,
 		client:   http.Client{},
+		donating: donating,
 	}
 }
 
@@ -92,7 +93,16 @@ func (a API) AddOutput(o Output) error {
 
 // AddBatchOutput implements PVOutput's /addbatchoutput.jsp service
 func (a API) AddBatchOutput(b BatchOutput) error {
-	req, err := a.getPOSTRequest(apiAddBatchOutputEndpoint, b)
+	max := BatchOutputMaxSize
+	if a.donating {
+		max = BatchOutputMaxSizeDonating
+	}
+
+	if len(b) > max {
+		return fmt.Errorf("max batch size is %d", max)
+	}
+
+	req, err := a.getPOSTRequest(apiAddOutputEndpoint, b)
 	if err != nil {
 		return err
 	}

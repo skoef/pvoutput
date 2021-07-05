@@ -189,13 +189,6 @@ func TestEncodeBatchOutput(t *testing.T) {
 		assert.Contains(t, err.Error(), "empty")
 	}
 
-	// batches that are too big should throw an error as well
-	b = make(BatchOutput, (BatchOutputMaxSize + 1))
-	_, err = b.Encode()
-	if assert.Error(t, err) {
-		assert.Contains(t, err.Error(), "max")
-	}
-
 	// example of documentation
 	// "Send three outputs in a single batch request"
 	b = BatchOutput{NewOutput(), NewOutput(), NewOutput()}

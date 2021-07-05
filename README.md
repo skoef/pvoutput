@@ -16,7 +16,7 @@ import (
 
 func main() {
     // create an API client per system you want to manage
-    api := pvoutput.NewAPI("XXX", "12345")
+    api := pvoutput.NewAPI("XXX", "12345", false)
 
     // get PV generation data from your solar inverter or
     // power consumption data from your utility meter

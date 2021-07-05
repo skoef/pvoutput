@@ -33,9 +33,12 @@ var (
 )
 
 const (
-	// BatchOutputMaxSize determines the maximum batch size
-	// this is 30 according to PVOutput's docs
-	BatchOutputMaxSize = 30
+	// BatchOutputMaxSize determines the maximum batch size when not in donating
+	// mode. Basically, batch output are disabled then
+	BatchOutputMaxSize = 1
+	// BatchOutputMaxSizeDonating determines the maximum batch size when in
+	// donating mode. This is 100 according to PVOutput's docs
+	BatchOutputMaxSizeDonating = 100
 )
 
 // Output represents the data structure for a PV Output as described
@@ -292,10 +295,6 @@ type BatchOutput []Output
 func (b BatchOutput) Encode() (string, error) {
 	if len(b) == 0 {
 		return "", errors.New("empty batch")
-	}
-
-	if len(b) > BatchOutputMaxSize {
-		return "", fmt.Errorf("max batch size is %d", BatchOutputMaxSize)
 	}
 
 	items := []string{}

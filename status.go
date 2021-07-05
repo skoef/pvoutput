@@ -120,54 +120,58 @@ func (s Status) Encode() (string, error) {
 }
 
 func decodeStatus(input string) (s Status, err error) {
-	var plh int64
 	fields := strings.Split(strings.TrimSpace(input), ",")
 
-	if len(fields) >= 9 {
-		// parse DateTime field from fields[0]+fields[1]
-		s.DateTime, err = time.Parse("20060102-15:04", fmt.Sprintf("%s-%s", fields[0], fields[1]))
-		if err != nil {
-			return
-		}
-		// parse Generated field from fields[2]
-		plh, err = strconv.ParseInt(fields[2], 10, 64)
-		if err != nil {
-			return
-		}
-		s.Generated = int(plh)
-		// parse Generating field from fields[3]
-		plh, err = strconv.ParseInt(fields[3], 10, 64)
-		if err != nil {
-			return
-		}
-		s.Generating = int(plh)
-		// parse Consumed field from fields[4]
-		plh, err = strconv.ParseInt(fields[4], 10, 64)
-		if err != nil {
-			return
-		}
-		s.Consumed = int(plh)
-		// parse Consuming field from fields[5]
-		plh, err = strconv.ParseInt(fields[5], 10, 64)
-		if err != nil {
-			return
-		}
-		s.Consuming = int(plh)
-		// parse Output field from fields[6]
-		s.Output, err = strconv.ParseFloat(fields[6], 64)
-		if err != nil {
-			return
-		}
-		// parse Temperature field from fields[7]
-		s.Temperature, err = strconv.ParseFloat(fields[7], 64)
-		if err != nil {
-			return
-		}
-		// parse Voltage field from fields[8]
-		s.Voltage, err = strconv.ParseFloat(fields[8], 64)
-		if err != nil {
-			return
-		}
+	if len(fields) < 9 {
+		return
+	}
+
+	// parse DateTime field from fields[0]+fields[1]
+	s.DateTime, err = time.Parse("20060102-15:04", fmt.Sprintf("%s-%s", fields[0], fields[1]))
+	if err != nil {
+		return
+	}
+
+	// parse Generated field from fields[2]
+	s.Generated, err = strconv.Atoi(fields[2])
+	if err != nil {
+		return
+	}
+
+	// parse Generating field from fields[3]
+	s.Generating, err = strconv.Atoi(fields[3])
+	if err != nil {
+		return
+	}
+
+	// parse Consumed field from fields[4]
+	s.Consumed, err = strconv.Atoi(fields[4])
+	if err != nil {
+		return
+	}
+
+	// parse Consuming field from fields[5]
+	s.Consuming, err = strconv.Atoi(fields[5])
+	if err != nil {
+		return
+	}
+
+	// parse Output field from fields[6]
+	s.Output, err = strconv.ParseFloat(fields[6], 64)
+	if err != nil {
+		return
+	}
+
+	// parse Temperature field from fields[7]
+	s.Temperature, err = strconv.ParseFloat(fields[7], 64)
+	if err != nil {
+		return
+	}
+
+	// parse Voltage field from fields[8]
+	s.Voltage, err = strconv.ParseFloat(fields[8], 64)
+	if err != nil {
+		return
 	}
 
 	return
@@ -179,11 +183,11 @@ type BatchStatus []Status
 // Encode returns API string for this object
 func (b BatchStatus) Encode() (string, error) {
 	if len(b) == 0 {
-		return "", errors.New("Empty batch")
+		return "", errors.New("empty batch")
 	}
 
 	if len(b) > BatchStatusMaxSize {
-		return "", fmt.Errorf("Max batch size is %d", BatchStatusMaxSize)
+		return "", fmt.Errorf("max batch size is %d", BatchStatusMaxSize)
 	}
 
 	items := []string{}

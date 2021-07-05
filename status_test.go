@@ -22,6 +22,7 @@ func TestStatusEncode(t *testing.T) {
 	newValidStatus := func() Status {
 		s := NewStatus()
 		s.DateTime, _ = time.Parse("20060102T15:04", "20200818T12:34")
+
 		return s
 	}
 
@@ -99,14 +100,14 @@ func TestEncodeBatchStatus(t *testing.T) {
 	b = BatchStatus{}
 	_, err := b.Encode()
 	if assert.Error(t, err) {
-		assert.Contains(t, err.Error(), "Empty")
+		assert.Contains(t, err.Error(), "empty")
 	}
 
 	// batches that are too big should throw an error as well
 	b = make(BatchStatus, (BatchStatusMaxSize + 1))
 	_, err = b.Encode()
 	if assert.Error(t, err) {
-		assert.Contains(t, err.Error(), "Max")
+		assert.Contains(t, err.Error(), "max")
 	}
 
 	// example of documentation

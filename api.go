@@ -57,6 +57,7 @@ func (a API) getRequest(method, path string) (*http.Request, error) {
 
 	req.Header.Add("X-Pvoutput-Apikey", a.Key)
 	req.Header.Add("X-Pvoutput-SystemId", a.SystemID)
+
 	return req, nil
 }
 

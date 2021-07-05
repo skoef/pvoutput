@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	outputUnsetInt    int     = -1
-	outputUnsetFloat  float64 = -1.0
-	outputUnsetString string  = "__unset__"
+	outputUnsetInt    = -1
+	outputUnsetFloat  = -1.0
+	outputUnsetString = "__unset__"
 	// order of keys in batch output
 	// as described on https://pvoutput.org/help.html#api-addbatchoutput
 	outputBatchKeys = []string{
@@ -94,7 +94,7 @@ func NewOutput() Output {
 func (o Output) encode() (url.Values, error) {
 	data := url.Values{}
 	if o.Date.IsZero() {
-		return nil, errors.New("Date is required on Output")
+		return nil, errors.New("date is required on Output")
 	}
 
 	data.Set("d", o.Date.Format("20060102"))
@@ -164,121 +164,122 @@ func (o Output) Encode() (string, error) {
 }
 
 func decodeOutput(input string) (op Output, err error) {
-	var plh int64
 	fields := strings.Split(strings.TrimSpace(input), ",")
-	if len(fields) >= 14 {
-		// parse Date field from fields[0]
-		op.Date, err = time.Parse("20060102", fields[0])
-		if err != nil {
-			return
-		}
-		// parse Generated field from fields[1]
-		plh, err = strconv.ParseInt(fields[1], 10, 64)
-		if err != nil {
-			return
-		}
-		op.Generated = int(plh)
-		// parse Efficiency field from fields[8]
-		op.Efficiency, err = strconv.ParseFloat(fields[2], 64)
-		if err != nil {
-			return
-		}
-		// parse Exported field from fields[3]
-		plh, err = strconv.ParseInt(fields[3], 10, 64)
-		if err != nil {
-			return
-		}
-		op.Exported = int(plh)
-		// parse Consumed field from fields[4]
-		plh, err = strconv.ParseInt(fields[4], 10, 64)
-		if err != nil {
-			return
-		}
-		op.Consumed = int(plh)
-		// parse PeakPower field from fields[5]
-		plh, err = strconv.ParseInt(fields[5], 10, 64)
-		if err != nil {
-			return
-		}
-		op.PeakPower = int(plh)
-
-		// parse PeakTime field from fields[6]
-		op.PeakTime, err = time.Parse("15:04", fields[6])
-		if err != nil {
-			return
-		}
-		// get Condition field from fields[7]
-		op.Condition = fields[7]
-		// parse MinTemp field from fields[8]
-		op.MinTemp, err = strconv.ParseFloat(fields[8], 64)
-		if err != nil {
-			return
-		}
-		// parse MaxTemp field from fields[9]
-		op.MaxTemp, err = strconv.ParseFloat(fields[9], 64)
-		if err != nil {
-			return
-		}
-		// parse ImportPeak field from fields[10]
-		plh, err = strconv.ParseInt(fields[10], 10, 64)
-		if err != nil {
-			return
-		}
-		op.ImportPeak = int(plh)
-		// parse ImportOffPeak field from fields[11]
-		plh, err = strconv.ParseInt(fields[11], 10, 64)
-		if err != nil {
-			return
-		}
-		op.ImportOffPeak = int(plh)
-		// parse ImportShoulder field from fields[12]
-		plh, err = strconv.ParseInt(fields[12], 10, 64)
-		if err != nil {
-			return
-		}
-		op.ImportShoulder = int(plh)
-		// parse ImportHighShoulder field from fields[13]
-		plh, err = strconv.ParseInt(fields[13], 10, 64)
-		if err != nil {
-			return
-		}
-		op.ImportHighShoulder = int(plh)
+	if len(fields) < 14 {
+		return
+	}
+	// parse Date field from fields[0]
+	op.Date, err = time.Parse("20060102", fields[0])
+	if err != nil {
+		return
+	}
+	// parse Generated field from fields[1]
+	op.Generated, err = strconv.Atoi(fields[1])
+	if err != nil {
+		return
 	}
 
-	if len(fields) >= 18 {
-		// parse ExportPeak field from fields[14]
-		plh, err = strconv.ParseInt(fields[14], 10, 64)
-		if err != nil {
-			return
-		}
-		op.ExportPeak = int(plh)
-		// parse ExportOffPeak field from fields[15]
-		plh, err = strconv.ParseInt(fields[15], 10, 64)
-		if err != nil {
-			return
-		}
-		op.ExportOffPeak = int(plh)
-		// parse ExportShoulder field from fields[16]
-		plh, err = strconv.ParseInt(fields[16], 10, 64)
-		if err != nil {
-			return
-		}
-		op.ExportShoulder = int(plh)
-		// parse ExportHighShoulder field from fields[17]
-		plh, err = strconv.ParseInt(fields[17], 10, 64)
-		if err != nil {
-			return
-		}
-		op.ExportHighShoulder = int(plh)
+	// parse Efficiency field from fields[8]
+	op.Efficiency, err = strconv.ParseFloat(fields[2], 64)
+	if err != nil {
+		return
 	}
 
-	if len(fields) >= 19 {
-		// parse Insolation field from fields[18]
-		plh, err = strconv.ParseInt(fields[18], 10, 64)
-		if err != nil {
-			return
-		}
-		op.Insolation = int(plh)
+	// parse Exported field from fields[3]
+	op.Exported, err = strconv.Atoi(fields[3])
+	if err != nil {
+		return
+	}
+
+	// parse Consumed field from fields[4]
+	op.Consumed, err = strconv.Atoi(fields[4])
+	if err != nil {
+		return
+	}
+
+	// parse PeakPower field from fields[5]
+	op.PeakPower, err = strconv.Atoi(fields[5])
+	if err != nil {
+		return
+	}
+
+	// parse PeakTime field from fields[6]
+	op.PeakTime, err = time.Parse("15:04", fields[6])
+	if err != nil {
+		return
+	}
+	// get Condition field from fields[7]
+	op.Condition = fields[7]
+	// parse MinTemp field from fields[8]
+	op.MinTemp, err = strconv.ParseFloat(fields[8], 64)
+	if err != nil {
+		return
+	}
+	// parse MaxTemp field from fields[9]
+	op.MaxTemp, err = strconv.ParseFloat(fields[9], 64)
+	if err != nil {
+		return
+	}
+	// parse ImportPeak field from fields[10]
+	op.ImportPeak, err = strconv.Atoi(fields[10])
+	if err != nil {
+		return
+	}
+
+	// parse ImportOffPeak field from fields[11]
+	op.ImportOffPeak, err = strconv.Atoi(fields[11])
+	if err != nil {
+		return
+	}
+
+	// parse ImportShoulder field from fields[12]
+	op.ImportShoulder, err = strconv.Atoi(fields[12])
+	if err != nil {
+		return
+	}
+
+	// parse ImportHighShoulder field from fields[13]
+	op.ImportHighShoulder, err = strconv.Atoi(fields[13])
+	if err != nil {
+		return
+	}
+
+	if len(fields) < 18 {
+		return
+	}
+
+	// parse ExportPeak field from fields[14]
+	op.ExportPeak, err = strconv.Atoi(fields[14])
+	if err != nil {
+		return
+	}
+
+	// parse ExportOffPeak field from fields[15]
+	op.ExportOffPeak, err = strconv.Atoi(fields[15])
+	if err != nil {
+		return
+	}
+
+	// parse ExportShoulder field from fields[16]
+	op.ExportShoulder, err = strconv.Atoi(fields[16])
+	if err != nil {
+		return
+	}
+
+	// parse ExportHighShoulder field from fields[17]
+	op.ExportHighShoulder, err = strconv.Atoi(fields[17])
+	if err != nil {
+		return
+	}
+
+	if len(fields) < 19 {
+		return
+	}
+
+	// parse Insolation field from fields[18]
+	op.Insolation, err = strconv.Atoi(fields[18])
+	if err != nil {
+		return
 	}
 
 	return
@@ -290,11 +291,11 @@ type BatchOutput []Output
 // Encode returns API string for this object
 func (b BatchOutput) Encode() (string, error) {
 	if len(b) == 0 {
-		return "", errors.New("Empty batch")
+		return "", errors.New("empty batch")
 	}
 
 	if len(b) > BatchOutputMaxSize {
-		return "", fmt.Errorf("Max batch size is %d", BatchOutputMaxSize)
+		return "", fmt.Errorf("max batch size is %d", BatchOutputMaxSize)
 	}
 
 	items := []string{}

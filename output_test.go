@@ -16,12 +16,13 @@ func TestEncodeOutput(t *testing.T) {
 
 	_, err = o.Encode()
 	if assert.Error(t, err) {
-		assert.Contains(t, err.Error(), "Date is required")
+		assert.Contains(t, err.Error(), "date is required")
 	}
 
 	newValidOutput := func() Output {
 		o := NewOutput()
 		o.Date, _ = time.Parse("20060102", "20200818")
+
 		return o
 	}
 
@@ -185,14 +186,14 @@ func TestEncodeBatchOutput(t *testing.T) {
 	b = BatchOutput{}
 	_, err := b.Encode()
 	if assert.Error(t, err) {
-		assert.Contains(t, err.Error(), "Empty")
+		assert.Contains(t, err.Error(), "empty")
 	}
 
 	// batches that are too big should throw an error as well
 	b = make(BatchOutput, (BatchOutputMaxSize + 1))
 	_, err = b.Encode()
 	if assert.Error(t, err) {
-		assert.Contains(t, err.Error(), "Max")
+		assert.Contains(t, err.Error(), "max")
 	}
 
 	// example of documentation
